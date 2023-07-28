@@ -109,5 +109,7 @@ public class JwtTokenProvider {
             log.info("JwtTokenProvider - isValidateToken: 토큰 유효 체크 예외 발생");
             return false;
         }
+        // 만료시간이 현재시간보다 지났으면 true > 리턴값 : false;
+        // 만료시간이 현재시간보다 안 지났으면 false > 리턴값 : true;
     }
 }
