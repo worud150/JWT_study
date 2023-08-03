@@ -11,7 +11,7 @@
     </insert>
 
     <select id="getByUid">
-        SELECT iuser, uid, upw, name, role
+        SELECT iuser, uid, upw, name, role, secret_key secretKey
         FROM t_user
         WHERE uid = #{uid}
     </select>

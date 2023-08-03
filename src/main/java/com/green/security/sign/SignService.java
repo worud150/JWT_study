@@ -6,12 +6,16 @@ import com.green.security.config.RedisService;
 import com.green.security.config.security.JwtTokenProvider;
 import com.green.security.config.security.UserDetailsMapper;
 import com.green.security.config.security.model.*;
+import com.green.security.config.security.otp.TOTP;
 import com.green.security.sign.model.SignInResultDto;
 import com.green.security.sign.model.SignUpResultDto;
+import com.green.security.sign.model.UserUpdDto;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base32;
+import org.apache.commons.codec.binary.Hex;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -204,5 +208,29 @@ public class SignService {
         long expiration = JWT_PROVIDER.getTokenExpirationTime(accessToken, JWT_PROVIDER.ACCESS_KEY) - LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         REDIS_SERVICE.setValuesWithTimeout(accessToken, "logout", expiration);  //남은시간 이후가 되면 삭제가 되도록 함.
     }
+    public int updSecretKey(Long iuser, String secretKey) {
+        UserUpdDto dto = new UserUpdDto();
+        dto.setIuser(iuser);
+        dto.setSecretKey(secretKey);
+
+        return MAPPER.updSecretKey(dto);
+    }
+
+    public boolean otpValid(String inputCode) {
+        UserEntity entity = MAPPER.getByUid("worud150");
+        String code = getTOTPCode(entity.getSecretKey());
+        return code.equals(inputCode);
+    }
+
+    // OTP 검증 요청 때마다 개인키로 OTP 생성
+    private String getTOTPCode(String secretKey) {
+        Base32 base32 = new Base32();
+        // 실제로는 로그인한 회원에게 생성된 개인키가 필요합니다.
+        byte[] bytes = base32.decode(secretKey);
+        String hexKey = Hex.encodeHexString(bytes);
+        return TOTP.getOTP(hexKey);
+    }
+
+
 }
 

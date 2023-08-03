@@ -11,4 +11,5 @@ public class UserEntity {
     private String upw;
     private String name;
     private String role;
+    private String secretKey;
 }

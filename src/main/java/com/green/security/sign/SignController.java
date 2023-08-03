@@ -1,11 +1,17 @@
 package com.green.security.sign;
 
 import com.green.security.CommonRes;
+import com.green.security.config.security.otp.OtpRes;
+import com.green.security.config.security.otp.TOTP;
+import com.green.security.config.security.otp.TOTPTokenGenerator;
 import com.green.security.sign.model.SignInResultDto;
 import com.green.security.sign.model.SignUpResultDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base32;
+import org.apache.commons.codec.binary.Hex;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -18,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/sign-api")
 public class SignController {
     private final SignService SERVICE;
+    private final TOTPTokenGenerator totp;
 
     //ApiParam은 문서 자동화를 위한 Swagger에서 쓰이는 어노테이션이고
     //RequestParam은 http 로부터 요청 온 정보를 받아오기 위한 스프링 어노테이션이다.
@@ -66,5 +73,23 @@ public class SignController {
                 .status(HttpStatus.OK)
                 .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
                 .build();
+    }
+    @GetMapping("/otp")
+    public ResponseEntity<?> otp() {
+        // secretKey 생성
+        String secretKey = totp.generateSecretKey();
+        System.out.println(secretKey);
+        String account = "pirbak@google.com";
+        String issuer = "otpTest";
+        // secretKey + account + issuer => QR 바코드 생성
+        String barcodeUrl = totp.getGoogleAuthenticatorBarcode(secretKey, account, issuer);
+        OtpRes res = OtpRes.builder().secretKey(secretKey).barcodeUrl(barcodeUrl).build();
+        SERVICE.updSecretKey(1L, secretKey);
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
+    @GetMapping("/otp-valid")
+    public ResponseEntity<?> otpValid(@RequestParam String inputCode) {
+        return ResponseEntity.status(HttpStatus.OK).body(SERVICE.otpValid(inputCode));
     }
 }
