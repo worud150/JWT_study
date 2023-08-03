@@ -134,9 +134,14 @@ public class SignService {
             String reAccessToken = JWT_PROVIDER.generateJwtToken(strIuser, roles, JWT_PROVIDER.ACCESS_TOKEN_VALID_MS, JWT_PROVIDER.ACCESS_KEY);
 
             //redis 업데이트
-            RedisJwtVo updateRedisJwtVo = RedisJwtVo.builder().accessToken(reAccessToken).refreshToken(redisJwtVo.getRefreshToken()).build();
+            RedisJwtVo updateRedisJwtVo = RedisJwtVo.builder()
+                                        .accessToken(reAccessToken)
+                                        .refreshToken(redisJwtVo
+                                        .getRefreshToken())
+                                        .build();
             String upateValue = OBJECT_MAPPER.writeValueAsString(updateRedisJwtVo);
             REDIS_SERVICE.setValues(redisKey, upateValue);
+
             return SignInResultDto.builder()
                     .accessToken(reAccessToken)
                     .refreshToken(refreshToken)

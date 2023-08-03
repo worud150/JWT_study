@@ -24,7 +24,7 @@ public class SignController {
 
 
     @PostMapping("/sign-in")
-    public SignInResultDto signIn(HttpServletRequest req, @RequestParam String id, @RequestParam String password) throws RuntimeException {
+    public SignInResultDto signIn(HttpServletRequest req, @RequestParam String id, @RequestParam String password) throws Exception {
 
         String ip = req.getRemoteAddr();
         log.info("[signIn] 로그인을 시도하고 있습니다. id: {}, pw: {}, ip: {}", id, password, ip);
